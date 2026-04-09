@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}View Predictions — Admin{% endblock %}
+{% block nav %}
+<nav>
+    <a class="nav-brand" href="/">Drunk<span>&amp;Drive</span></a>
+    <div class="nav-links">
+        <a href="{% url 'View_Remote_Users' %}">👥 Users</a>
+        <a href="{% url 'train_model' %}">🤖 Train</a>
+        <a href="{% url 'View_Prediction_Of_Drink_Driving_Detection_Ratio' %}">📊 Ratio</a>
+        <a href="{% url 'View_Prediction_Of_Drink_Driving_Detection' %}" class="active">📋 Predictions</a>
+        <a href="{% url 'charts' chart_type='bar' %}">📈 Charts</a>
+        <a href="{% url 'Download_Predicted_DataSets' %}">⬇️ Download</a>
+        <a href="{% url 'sp_logout' %}" class="btn-logout">Logout</a>
+    </div>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <h1 style="color:#00d4ff;font-size:1.8rem;font-weight:800;">📋 Model Predictions</h1>
+            <p style="color:#888;font-size:0.9rem;">Sample predictions from the trained ML model (50 records)</p>
+        </div>
+        <a href="{% url 'Download_Predicted_DataSets' %}" class="btn btn-success">⬇️ Download Full CSV</a>
+    </div>
+
+    {% if predictions %}
+    <div class="card" style="padding:0;overflow:hidden;overflow-x:auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Reaction Time</th>
+                    <th>Steering Dev.</th>
+                    <th>Lane Dev.</th>
+                    <th>Actual</th>
+                    <th>Predicted</th>
+                    <th>DUI Prob.</th>
+                    <th>Match</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in predictions %}
+                <tr>
+                    <td style="color:#666;">{{ p.id }}</td>
+                    <td>{{ p.reaction_time }}s</td>
+                    <td>{{ p.steering_deviation }}°</td>
+                    <td>{{ p.lane_deviation }}m</td>
+                    <td>
+                        <span class="badge {% if p.actual == 'DUI' %}badge-danger{% else %}badge-success{% endif %}">
+                            {{ p.actual }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {% if p.predicted == 'DUI' %}badge-danger{% else %}badge-success{% endif %}">
+                            {{ p.predicted }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="background:rgba(255,255,255,0.1);border-radius:10px;height:6px;width:60px;overflow:hidden;">
+                                <div style="height:100%;width:{{ p.probability }}%;background:{% if p.probability > 50 %}#ff6b6b{% else %}#00d4ff{% endif %};border-radius:10px;"></div>
+                            </div>
+                            <span style="font-size:0.85rem;color:#aaa;">{{ p.probability }}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if p.correct %}
+                            <span style="color:#4caf50;font-size:1.1rem;">✓</span>
+                        {% else %}
+                            <span style="color:#ff6b6b;font-size:1.1rem;">✗</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top:16px;color:#888;font-size:0.85rem;">
+        Showing {{ predictions|length }} sample predictions.
+        <a href="{% url 'Download_Predicted_DataSets' %}" style="color:#00d4ff;">Download all predictions →</a>
+    </div>
+
+    {% else %}
+    <div class="card" style="text-align:center;padding:60px;">
+        <div style="font-size:3rem;margin-bottom:12px;">🤖</div>
+        <h3 style="color:#666;">No predictions available</h3>
+        <p style="color:#555;margin:12px 0;">Train the model first to see predictions.</p>
+        <a href="{% url 'train_model' %}" class="btn btn-primary">Train Model</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

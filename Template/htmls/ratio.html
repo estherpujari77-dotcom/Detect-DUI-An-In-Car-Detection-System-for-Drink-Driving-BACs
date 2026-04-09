@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}Detection Ratio — Admin{% endblock %}
+{% block nav %}
+<nav>
+    <a class="nav-brand" href="/">Drunk<span>&amp;Drive</span></a>
+    <div class="nav-links">
+        <a href="{% url 'View_Remote_Users' %}">👥 Users</a>
+        <a href="{% url 'train_model' %}">🤖 Train</a>
+        <a href="{% url 'View_Prediction_Of_Drink_Driving_Detection_Ratio' %}" class="active">📊 Ratio</a>
+        <a href="{% url 'View_Prediction_Of_Drink_Driving_Detection' %}">📋 Predictions</a>
+        <a href="{% url 'charts' chart_type='bar' %}">📈 Charts</a>
+        <a href="{% url 'sp_logout' %}" class="btn-logout">Logout</a>
+    </div>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="container" style="max-width:900px;">
+    <div style="margin-bottom:24px;">
+        <h1 style="color:#00d4ff;font-size:1.8rem;font-weight:800;">📊 DUI Detection Ratio</h1>
+        <p style="color:#888;font-size:0.9rem;">Dataset statistics and model performance overview</p>
+    </div>
+
+    {% if stats %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px;">
+        <div class="card" style="text-align:center;padding:22px;">
+            <div style="font-size:2rem;font-weight:800;color:#fff;">{{ stats.total }}</div>
+            <div style="color:#888;font-size:0.85rem;margin-top:4px;">Total Samples</div>
+        </div>
+        <div class="card" style="text-align:center;padding:22px;border-color:rgba(0,212,255,0.3);">
+            <div style="font-size:2rem;font-weight:800;color:#00d4ff;">{{ stats.sober }}</div>
+            <div style="color:#888;font-size:0.85rem;margin-top:4px;">Sober Drivers</div>
+            <div style="color:#00d4ff;font-size:0.8rem;">{{ stats.sober_ratio }}%</div>
+        </div>
+        <div class="card" style="text-align:center;padding:22px;border-color:rgba(255,107,107,0.3);">
+            <div style="font-size:2rem;font-weight:800;color:#ff6b6b;">{{ stats.dui }}</div>
+            <div style="color:#888;font-size:0.85rem;margin-top:4px;">DUI Detected</div>
+            <div style="color:#ff6b6b;font-size:0.8rem;">{{ stats.dui_ratio }}%</div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+        <div class="card-title">Class Distribution</div>
+        <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                <span style="color:#00d4ff;font-size:0.9rem;">✅ Sober Drivers</span>
+                <span style="color:#00d4ff;font-size:0.9rem;">{{ stats.sober_ratio }}%</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.1);border-radius:20px;height:16px;overflow:hidden;">
+                <div style="height:100%;width:{{ stats.sober_ratio }}%;background:linear-gradient(90deg,#00d4ff,#00bcd4);border-radius:20px;"></div>
+            </div>
+        </div>
+        <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                <span style="color:#ff6b6b;font-size:0.9rem;">🚨 DUI Drivers</span>
+                <span style="color:#ff6b6b;font-size:0.9rem;">{{ stats.dui_ratio }}%</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.1);border-radius:20px;height:16px;overflow:hidden;">
+                <div style="height:100%;width:{{ stats.dui_ratio }}%;background:linear-gradient(90deg,#ff9800,#ff6b6b);border-radius:20px;"></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if metrics %}
+    <div class="card" style="margin-bottom:24px;">
+        <div class="card-title">🤖 Model Performance Metrics</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+            <div style="padding:16px;background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.3);border-radius:10px;">
+                <div style="color:#4caf50;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Accuracy</div>
+                <div style="font-size:2rem;font-weight:800;color:#4caf50;">{{ metrics.accuracy }}%</div>
+                <div style="color:#666;font-size:0.78rem;margin-top:4px;">Overall correct predictions</div>
+            </div>
+            <div style="padding:16px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.3);border-radius:10px;">
+                <div style="color:#00d4ff;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ROC-AUC</div>
+                <div style="font-size:2rem;font-weight:800;color:#00d4ff;">{{ metrics.auc }}</div>
+                <div style="color:#666;font-size:0.78rem;margin-top:4px;">Area under ROC curve</div>
+            </div>
+            <div style="padding:16px;background:rgba(124,77,255,0.08);border:1px solid rgba(124,77,255,0.3);border-radius:10px;">
+                <div style="color:#7c4dff;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">CV Score</div>
+                <div style="font-size:2rem;font-weight:800;color:#7c4dff;">{{ metrics.cv_mean }}%</div>
+                <div style="color:#666;font-size:0.78rem;margin-top:4px;">±{{ metrics.cv_std }}% (5-fold)</div>
+            </div>
+            <div style="padding:16px;background:rgba(255,152,0,0.08);border:1px solid rgba(255,152,0,0.3);border-radius:10px;">
+                <div style="color:#ff9800;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Train Samples</div>
+                <div style="font-size:2rem;font-weight:800;color:#ff9800;">{{ metrics.train_samples }}</div>
+                <div style="color:#666;font-size:0.78rem;margin-top:4px;">80/20 train-test split</div>
+            </div>
+        </div>
+    </div>
+
+    {% if metrics.classification_report %}
+    <div class="card">
+        <div class="card-title">📋 Classification Report</div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Class</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>F1-Score</th>
+                    <th>Support</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="badge badge-success">Sober</span></td>
+                    <td>{{ metrics.classification_report.Sober.precision|floatformat:3 }}</td>
+                    <td>{{ metrics.classification_report.Sober.recall|floatformat:3 }}</td>
+                    <td>{{ metrics.classification_report.Sober.f1-score|floatformat:3 }}</td>
+                    <td>{{ metrics.classification_report.Sober.support|floatformat:0 }}</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-danger">DUI</span></td>
+                    <td>{{ metrics.classification_report.DUI.precision|floatformat:3 }}</td>
+                    <td>{{ metrics.classification_report.DUI.recall|floatformat:3 }}</td>
+                    <td>{{ metrics.classification_report.DUI.f1-score|floatformat:3 }}</td>
+                    <td>{{ metrics.classification_report.DUI.support|floatformat:0 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="card" style="text-align:center;padding:50px;">
+        <div style="font-size:3rem;margin-bottom:12px;">🤖</div>
+        <h3 style="color:#666;">Model not trained yet</h3>
+        <p style="color:#555;margin:12px 0;">Train the model to see performance metrics.</p>
+        <a href="{% url 'train_model' %}" class="btn btn-primary">Train Model Now</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
