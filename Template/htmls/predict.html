@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% block title %}Drunk &amp; Driving Prediction — Detection DUI in Car{% endblock %}
+{% block nav %}
+<nav>
+    <a class="nav-brand" href="/">Drunk<span>&amp;Drive</span></a>
+    <div class="nav-links">
+        <a href="{% url 'Predict_Drink_Driving_Detection' %}" class="active">🔍 Predict</a>
+        <a href="{% url 'ViewYourProfile' %}">👤 Profile</a>
+        <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+    </div>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div style="margin-bottom:24px;">
+        <h1 style="color:#00d4ff;font-size:1.8rem;font-weight:800;">🔍 DUI Detection Prediction</h1>
+        <p style="color:#888;font-size:0.9rem;margin-top:4px;">Enter sensor readings to get real-time DUI risk assessment</p>
+    </div>
+
+    {% if result %}
+    <div class="card" style="border: 2px solid {% if prediction_label == 'danger' %}rgba(255,107,107,0.5){% elif prediction_label == 'success' %}rgba(76,175,80,0.5){% else %}rgba(255,152,0,0.5){% endif %}; margin-bottom: 28px;">
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+            <div style="font-size: 4rem;">
+                {% if prediction_label == 'danger' %}🚨{% elif prediction_label == 'success' %}✅{% else %}⚠️{% endif %}
+            </div>
+            <div style="flex:1;">
+                <div style="font-size:1.6rem;font-weight:800;color:{% if prediction_label == 'danger' %}#ff6b6b{% elif prediction_label == 'success' %}#4caf50{% else %}#ff9800{% endif %};">
+                    {{ result }}
+                </div>
+                <div style="color:#aaa;font-size:0.95rem;margin-top:4px;">
+                    Risk Level: <strong style="color:{% if prediction_label == 'danger' %}#ff6b6b{% elif prediction_label == 'success' %}#4caf50{% else %}#ff9800{% endif %};">{{ risk_level }}</strong>
+                </div>
+                <div style="margin-top:12px;">
+                    <div style="color:#aaa;font-size:0.85rem;margin-bottom:6px;">DUI Probability: {{ dui_probability }}%</div>
+                    <div style="background:rgba(255,255,255,0.1);border-radius:20px;height:12px;overflow:hidden;">
+                        <div style="height:100%;width:{{ dui_probability }}%;background:{% if prediction_label == 'danger' %}linear-gradient(90deg,#ff9800,#ff6b6b){% else %}linear-gradient(90deg,#00d4ff,#4caf50){% endif %};border-radius:20px;transition:width 1s ease;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if feature_values %}
+        <div style="margin-top:24px;border-top:1px solid rgba(255,255,255,0.1);padding-top:18px;">
+            <h4 style="color:#aaa;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Input Features</h4>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
+                {% for key, val in feature_values.items %}
+                <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;border:1px solid rgba(255,255,255,0.07);">
+                    <div style="color:#888;font-size:0.78rem;">{{ key }}</div>
+                    <div style="color:#e0e0e0;font-weight:600;font-size:1rem;margin-top:2px;">{{ val }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-title">📡 Enter Sensor Data</div>
+        <form method="POST">
+            {% csrf_token %}
+
+            <div style="margin-bottom:18px;">
+                <h4 style="color:#7c4dff;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid rgba(124,77,255,0.2);">🚗 Vehicle Behavior Sensors</h4>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+                    <div class="form-group" style="margin:0;">
+                        <label>Reaction Time (seconds)</label>
+                        <input type="number" name="reaction_time" step="0.01" min="0.3" max="5.0"
+                               placeholder="e.g. 0.8 (normal) / 2.0 (DUI)" value="{{ request.POST.reaction_time }}">
+                        <small style="color:#666;font-size:0.75rem;">Normal: 0.4–1.3 | DUI: 1.5–3.5</small>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Steering Deviation (degrees)</label>
+                        <input type="number" name="steering_deviation" step="0.1" min="0" max="90"
+                               placeholder="e.g. 5 (normal) / 25 (DUI)" value="{{ request.POST.steering_deviation }}">
+                        <small style="color:#666;font-size:0.75rem;">Normal: 0–12 | DUI: 15–45</small>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Speed Variation (km/h std)</label>
+                        <input type="number" name="speed_variation" step="0.1" min="0" max="100"
+                               placeholder="e.g. 8 (normal) / 30 (DUI)" value="{{ request.POST.speed_variation }}">
+                        <small style="color:#666;font-size:0.75rem;">Normal: 2–18 | DUI: 20–55</small>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Lane Deviation (meters)</label>
+                        <input type="number" name="lane_deviation" step="0.01" min="0" max="3.0"
+                               placeholder="e.g. 0.15 (normal) / 0.6 (DUI)" value="{{ request.POST.lane_deviation }}">
+                        <small style="color:#666;font-size:0.75rem;">Normal: 0–0.35 | DUI: 0.4–1.2</small>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Brake Pressure (0–100)</label>
+                        <input type="number" name="brake_pressure" step="0.1" min="0" max="100"
+                               placeholder="e.g. 40 (normal) / 70 (DUI)" value="{{ request.POST.brake_pressure }}">
+                        <small style="color:#666;font-size:0.75rem;">Normal: 20–65 | DUI: 45–100</small>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Acceleration Jerk (m/s³)</label>
+                        <input type="number" name="acceleration_jerk" step="0.01" min="0" max="15"
+                               placeholder="e.g. 1.5 (normal) / 5.0 (DUI)" value="{{ request.POST.acceleration_jerk }}">
+                        <small style="color:#666;font-size:0.75rem;">Normal: 0.3–2.8 | DUI: 3.0–8.0</small>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom:18px;">
+                <h4 style="color:#ff6b6b;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid rgba(255,107,107,0.2);">👁️ Biometric / Physiological Sensors</h4>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+                    <div class="form-group" style="margin:0;">
+                        <label>Eye Blink Rate (blinks/min)</label>
+                        <input type="number" name="eye_blink_rate" step="0.1" min="0" max="60"
+                               placeholder="e.g. 17 (normal) / 8 (DUI)" value="{{ request.POST.eye_blink_rate }}">
+                        <small style="color:#666;font-size:0.75rem;">Normal: 12–25 | DUI: 2–16</small>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Head Tilt Angle (degrees)</label>
+                        <input type="number" name="head_tilt_angle" step="0.1" min="0" max="90"
+                               placeholder="e.g. 5 (normal) / 25 (DUI)" value="{{ request.POST.head_tilt_angle }}">
+                        <small style="color:#666;font-size:0.75rem;">Normal: 0–12 | DUI: 15–45</small>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Heart Rate (bpm)</label>
+                        <input type="number" name="heart_rate" step="0.1" min="40" max="200"
+                               placeholder="e.g. 72 (normal) / 92 (DUI)" value="{{ request.POST.heart_rate }}">
+                        <small style="color:#666;font-size:0.75rem;">Normal: 55–90 | DUI: 75–130</small>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Skin Conductance (μS)</label>
+                        <input type="number" name="skin_conductance" step="0.01" min="0" max="20"
+                               placeholder="e.g. 3.0 (normal) / 7.0 (DUI)" value="{{ request.POST.skin_conductance }}">
+                        <small style="color:#666;font-size:0.75rem;">Normal: 1.0–5.0 | DUI: 4.5–12.0</small>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;">
+                <button type="submit" class="btn btn-primary" style="padding:13px 32px;font-size:1rem;">
+                    🔍 Analyze & Predict
+                </button>
+                <button type="button" onclick="fillSample('sober')" class="btn btn-success">
+                    ✅ Fill Sober Sample
+                </button>
+                <button type="button" onclick="fillSample('dui')" class="btn btn-danger">
+                    🚨 Fill DUI Sample
+                </button>
+                <button type="reset" class="btn" style="background:rgba(255,255,255,0.08);color:#aaa;">
+                    🔄 Clear
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function fillSample(type) {
+    const samples = {
+        sober: {
+            reaction_time: 0.75, steering_deviation: 4.5, speed_variation: 7.2,
+            lane_deviation: 0.12, brake_pressure: 38, acceleration_jerk: 1.3,
+            eye_blink_rate: 18, head_tilt_angle: 4, heart_rate: 70, skin_conductance: 2.8
+        },
+        dui: {
+            reaction_time: 2.2, steering_deviation: 26, speed_variation: 32,
+            lane_deviation: 0.65, brake_pressure: 72, acceleration_jerk: 5.2,
+            eye_blink_rate: 7, head_tilt_angle: 28, heart_rate: 95, skin_conductance: 7.5
+        }
+    };
+    const s = samples[type];
+    for (const [k, v] of Object.entries(s)) {
+        const el = document.querySelector(`[name="${k}"]`);
+        if (el) el.value = v;
+    }
+}
+</script>
+{% endblock %}

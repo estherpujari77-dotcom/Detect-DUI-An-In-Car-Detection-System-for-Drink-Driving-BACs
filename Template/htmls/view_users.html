@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}View Users — Admin{% endblock %}
+{% block nav %}
+<nav>
+    <a class="nav-brand" href="/">Drunk<span>&amp;Drive</span></a>
+    <div class="nav-links">
+        <a href="{% url 'View_Remote_Users' %}" class="active">👥 Users</a>
+        <a href="{% url 'train_model' %}">🤖 Train Model</a>
+        <a href="{% url 'View_Prediction_Of_Drink_Driving_Detection_Ratio' %}">📊 Ratio</a>
+        <a href="{% url 'View_Prediction_Of_Drink_Driving_Detection' %}">📋 Predictions</a>
+        <a href="{% url 'charts' chart_type='bar' %}">📈 Charts</a>
+        <a href="{% url 'Download_Predicted_DataSets' %}">⬇️ Download</a>
+        <a href="{% url 'sp_logout' %}" class="btn-logout">Logout</a>
+    </div>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <h1 style="color:#00d4ff;font-size:1.8rem;font-weight:800;">👥 Registered Users</h1>
+            <p style="color:#888;font-size:0.9rem;">Total: <strong style="color:#fff;">{{ users|length }}</strong> users</p>
+        </div>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td style="color:#666;">{{ forloop.counter }}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:32px;height:32px;background:linear-gradient(135deg,#00d4ff,#7c4dff);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;color:#fff;flex-shrink:0;">
+                                {{ user.username|first|upper }}
+                            </div>
+                            <strong>{{ user.username }}</strong>
+                        </div>
+                    </td>
+                    <td style="color:#aaa;">{{ user.email }}</td>
+                    <td style="color:#aaa;">{{ user.phone|default:"—" }}</td>
+                    <td style="color:#aaa;">{{ user.created_at|date:"d M Y" }}</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align:center;color:#666;padding:40px;">
+                        No registered users yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:28px;">
+        <a href="{% url 'train_model' %}" class="card" style="text-decoration:none;text-align:center;padding:20px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size:2rem;margin-bottom:8px;">🤖</div>
+            <div style="color:#00d4ff;font-weight:600;">Train ML Model</div>
+        </a>
+        <a href="{% url 'View_Prediction_Of_Drink_Driving_Detection_Ratio' %}" class="card" style="text-decoration:none;text-align:center;padding:20px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size:2rem;margin-bottom:8px;">📊</div>
+            <div style="color:#00d4ff;font-weight:600;">Detection Ratio</div>
+        </a>
+        <a href="{% url 'View_Prediction_Of_Drink_Driving_Detection' %}" class="card" style="text-decoration:none;text-align:center;padding:20px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size:2rem;margin-bottom:8px;">📋</div>
+            <div style="color:#00d4ff;font-weight:600;">View Predictions</div>
+        </a>
+        <a href="{% url 'charts' chart_type='bar' %}" class="card" style="text-decoration:none;text-align:center;padding:20px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size:2rem;margin-bottom:8px;">📈</div>
+            <div style="color:#00d4ff;font-weight:600;">View Charts</div>
+        </a>
+        <a href="{% url 'Download_Predicted_DataSets' %}" class="card" style="text-decoration:none;text-align:center;padding:20px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size:2rem;margin-bottom:8px;">⬇️</div>
+            <div style="color:#00d4ff;font-weight:600;">Download Dataset</div>
+        </a>
+    </div>
+</div>
+{% endblock %}
