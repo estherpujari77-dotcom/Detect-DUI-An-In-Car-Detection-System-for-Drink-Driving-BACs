@@ -1,1 +1,1 @@
-web: gunicorn DUI.wsgi
+web: gunicorn detectdui.wsgi
