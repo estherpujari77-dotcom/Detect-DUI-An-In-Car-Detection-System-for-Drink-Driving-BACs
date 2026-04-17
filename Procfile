@@ -1,1 +1,1 @@
-web: gunicorn drinkdrive.wsgi
+web: gunicorn DUI.wsgi
